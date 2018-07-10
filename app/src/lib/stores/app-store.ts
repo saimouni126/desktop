@@ -892,6 +892,8 @@ export class AppStore extends TypedBaseStore<IAppState> {
     }
 
     if (action.kind === CompareActionKind.Branch) {
+      await gitStore.detectMergeConflicts(action.branch)
+
       return this.updateCompareToBranch(repository, action)
     }
 
