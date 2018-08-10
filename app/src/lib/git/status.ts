@@ -65,7 +65,14 @@ export async function getStatus(
   repository: Repository
 ): Promise<IStatusResult | null> {
   const result = await spawnAndComplete(
-    ['status', '--untracked-files=all', '--branch', '--porcelain=2', '-z'],
+    [
+      '--no-optional-locks',
+      'status',
+      '--untracked-files=all',
+      '--branch',
+      '--porcelain=2',
+      '-z',
+    ],
     repository.path,
     'getStatus',
     new Set([0, 128])
