@@ -30,6 +30,7 @@ import {
 } from '../notification/new-commits-banner'
 import { enableNotificationOfBranchUpdates } from '../../lib/feature-flag'
 import { MergeCallToAction } from './merge-call-to-action'
+import { MergeConflictHint } from './merge-conflict-hint'
 
 interface ICompareSidebarProps {
   readonly repository: Repository
@@ -324,13 +325,16 @@ export class CompareSidebar extends React.Component<
     }
 
     return (
-      <MergeCallToAction
-        repository={this.props.repository}
-        dispatcher={this.props.dispatcher}
-        currentBranch={this.props.currentBranch}
-        formState={formState}
-        onMerged={this.onMerge}
-      />
+      <>
+        <MergeCallToAction
+          repository={this.props.repository}
+          dispatcher={this.props.dispatcher}
+          currentBranch={this.props.currentBranch}
+          formState={formState}
+          onMerged={this.onMerge}
+        />
+        <MergeConflictHint mergeStatus={this.props.compareState.mergeStatus} />
+      </>
     )
   }
 

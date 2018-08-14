@@ -28,6 +28,7 @@ import { PullRequest } from '../models/pull-request'
 import { IAuthor } from '../models/author'
 import { ComparisonCache } from './comparison-cache'
 import { ApplicationTheme } from '../ui/lib/application-theme'
+import { MergeTreeStatus } from '../models/merge-tree-status'
 
 export { ICommitMessage }
 
@@ -643,6 +644,9 @@ export interface ICompareBranch {
 export interface ICompareState {
   /** The current state of the compare form, based on user input */
   readonly formState: IDisplayHistory | ICompareBranch
+
+  /** The result of merging the compare branch into the current branch, if a branch selected */
+  readonly mergeStatus: MergeTreeStatus | null
 
   /** Whether the branch list should be expanded or hidden */
   readonly showBranchList: boolean

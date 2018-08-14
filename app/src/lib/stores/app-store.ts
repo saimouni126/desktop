@@ -154,6 +154,7 @@ import {
 } from '../../ui/lib/application-theme'
 import { findAccountForRemoteURL } from '../find-account'
 import { inferLastPushForRepository } from '../infer-last-push-for-repository'
+import { MergeResultKind } from '../git/merge-parser'
 
 /**
  * Enum used by fetch to determine if
@@ -462,6 +463,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       },
       compareState: {
         formState: { kind: ComparisonView.None },
+        mergeStatus: null,
         showBranchList: false,
         filterText: '',
         commitSHAs: [],
@@ -892,8 +894,6 @@ export class AppStore extends TypedBaseStore<IAppState> {
     }
 
     if (action.kind === CompareActionKind.Branch) {
-      await gitStore.detectMergeConflicts(action.branch)
-
       return this.updateCompareToBranch(repository, action)
     }
 
@@ -903,7 +903,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
   private async updateCompareToBranch(
     repository: Repository,
     action: ICompareToBranch
-  ) {
+  ): Promise<void> {
     const gitStore = this.getGitStore(repository)
 
     const comparisonBranch = action.branch
@@ -964,9 +964,39 @@ export class AppStore extends TypedBaseStore<IAppState> {
       this.currentAheadBehindUpdater.insert(from, to, aheadBehind)
     }
 
+    this.updateCompareState(repository, () => ({
+      mergeStatus: { kind: 'in-progress' },
+    }))
+
+    this.emitUpdate()
+
     this.updateOrSelectFirstCommit(repository, commitSHAs)
 
-    return this.emitUpdate()
+    gitStore.detectMergeConflicts(action.branch).then(result => {
+      if (result == null) {
+        this.updateCompareState(repository, () => ({
+          mergeStatus: null,
+        }))
+        return
+      }
+
+      if (result.kind === MergeResultKind.Conflicts) {
+        this.updateCompareState(repository, () => ({
+          mergeStatus: {
+            kind: 'conflicts',
+            conflicts: result.conflictedFiles,
+          },
+        }))
+      } else {
+        this.updateCompareState(repository, () => ({
+          mergeStatus: {
+            kind: 'clean',
+          },
+        }))
+      }
+
+      this.emitUpdate()
+    })
   }
 
   /** This shouldn't be called directly. See `Dispatcher`. */

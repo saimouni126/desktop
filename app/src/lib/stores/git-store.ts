@@ -70,7 +70,7 @@ import { IAuthor } from '../../models/author'
 import { formatCommitMessage } from '../format-commit-message'
 import { GitAuthor } from '../../models/git-author'
 import { BaseStore } from './base-store'
-import { MergeResultKind } from '../git/merge-parser'
+import { MergeResult } from '../git/merge-parser'
 
 /** The number of commits to load from history per batch. */
 const CommitBatchSize = 100
@@ -1351,21 +1351,13 @@ export class GitStore extends BaseStore {
     }
   }
 
-  public async detectMergeConflicts(compareBranch: Branch): Promise<void> {
+  public async detectMergeConflicts(
+    compareBranch: Branch
+  ): Promise<MergeResult | null> {
     if (this.tip.kind !== TipState.Valid) {
       return Promise.reject('tip is in unknown state')
     }
 
-    const result = await mergeTree(
-      this.repository,
-      this.tip.branch,
-      compareBranch
-    )
-
-    if (result != null) {
-      if (result.kind == MergeResultKind.Conflicts) {
-        log.info('we have conflicts when merging these two together?!?!?!?')
-      }
-    }
+    return await mergeTree(this.repository, this.tip.branch, compareBranch)
   }
 }
