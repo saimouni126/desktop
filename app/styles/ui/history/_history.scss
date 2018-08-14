@@ -79,6 +79,14 @@
     font-size: var(--font-size-sm);
     text-align: center;
     padding: var(--spacing);
+
+    &.warn {
+      color: var(--error-color);
+    }
+
+    &.clean {
+      color: var(--color-new);
+    }
   }
 
   .merge-message {

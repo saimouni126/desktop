@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as classNames from 'classnames'
 
 import { Octicon, OcticonSymbol } from '../octicons'
 import { Loading } from '../lib/loading'
@@ -13,32 +14,40 @@ export class MergeConflictHint extends React.Component<
   {}
 > {
   private renderMessage(mergeStatus: MergeTreeStatus): JSX.Element | null {
-    if (mergeStatus.kind === 'in-progress') {
-      return <Loading />
-    }
+    const symbol =
+      mergeStatus.kind === 'conflicts'
+        ? OcticonSymbol.alert
+        : OcticonSymbol.check
 
-    if (mergeStatus.kind === 'clean') {
-      return null
-    }
+    const text =
+      mergeStatus.kind === 'conflicts'
+        ? `There will be ${mergeStatus.conflicts} conflicted files`
+        : `No conflicted files found`
 
-    const message = `There will be ${mergeStatus.conflicts} conflicts`
     return (
-      <span>
-        <Octicon symbol={OcticonSymbol.alert} className="warn" />
-        {message}
-      </span>
+      <div>
+        <Octicon symbol={symbol} />
+        <span>{text}</span>
+      </div>
     )
   }
 
   public render() {
-    if (this.props.mergeStatus == null) {
+    const { mergeStatus } = this.props
+    if (mergeStatus == null) {
       return null
     }
 
-    return (
-      <div className="merge-cta">
-        {this.renderMessage(this.props.mergeStatus)}
-      </div>
-    )
+    if (mergeStatus.kind === 'in-progress') {
+      return <Loading />
+    }
+
+    // TODO: give this some proper styling love
+    const className = classNames('merge-cta', {
+      warn: mergeStatus.kind === 'conflicts',
+      clean: mergeStatus.kind === 'clean',
+    })
+
+    return <div className={className}>{this.renderMessage(mergeStatus)}</div>
   }
 }
